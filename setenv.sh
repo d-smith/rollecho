@@ -1,0 +1,4 @@
+#!/bin/sh
+export VAULT_ADDR=http://localhost:8200
+export VAULT_TOKEN=6efc4030-fda6-79ef-39a9-40f6a546436e
+export ECHO_WHITELISTED_CLIENT_ID=d80c9758-f965-4286-7003-e5af065d8082
