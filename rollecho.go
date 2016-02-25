@@ -23,17 +23,11 @@ type accessTokenResponse struct {
 	TokenType   string `json:"token_type"`
 }
 
-func echoHandler() http.HandlerFunc {
+func echoServiceHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "POST":
-			/*body, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			r.Body.Close()
-			*/
+			defer r.Body.Close() //Check for resource leaks using lsof | grep xavi|wc -l
 			echoTxt := r.FormValue("echo")
 			log.Println("data to echo:", echoTxt)
 			w.Write([]byte(echoTxt))
@@ -83,7 +77,7 @@ func oauthCallbackHandler() http.HandlerFunc {
 	}
 }
 
-func handleEcho() http.Handler {
+func echoClientHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "GET":
@@ -110,8 +104,8 @@ func main() {
 	var whitelisted = readWhitelistClientIDFromEnv()
 
 	mux := http.NewServeMux()
-	mux.Handle("/echoclient", handleEcho())
+	mux.Handle("/echoclient", echoClientHandler())
 	mux.Handle("/oauth2_callback", oauthCallbackHandler())
-	mux.Handle("/echosvc", az.Wrap(repos.NewVaultSecretsRepo(), repos.NewDynamoAdminRepo(), []string{whitelisted}, echoHandler()))
+	mux.Handle("/echosvc", az.Wrap(repos.NewVaultSecretsRepo(), repos.NewDynamoAdminRepo(), []string{whitelisted}, echoServiceHandler()))
 	http.ListenAndServe(fmt.Sprintf(":%d", *port), mux)
 }
