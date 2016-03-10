@@ -6,6 +6,7 @@ import (
 	"fmt"
 	az "github.com/xtraclabs/roll/authzwrapper"
 	"github.com/xtraclabs/roll/repos"
+	secretsrepo "github.com/xtraclabs/rollsecrets/repos"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -106,6 +107,6 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/echoclient", echoClientHandler())
 	mux.Handle("/oauth2_callback", oauthCallbackHandler())
-	mux.Handle("/echosvc", az.Wrap(repos.NewVaultSecretsRepo(), repos.NewDynamoAdminRepo(), []string{whitelisted}, echoServiceHandler()))
+	mux.Handle("/echosvc", az.Wrap(secretsrepo.NewVaultSecretsRepo(), repos.NewDynamoAdminRepo(), []string{whitelisted}, echoServiceHandler()))
 	http.ListenAndServe(fmt.Sprintf(":%d", *port), mux)
 }
